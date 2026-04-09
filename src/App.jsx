@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import logo from './assets/logo-new.png'
+import heroImg from './assets/hero.png'
 
 const DESTACADO_ID = 'p2'
 
@@ -67,6 +68,13 @@ const destacado = MENU.promos.find(p => p.id === DESTACADO_ID)
 
 const formatPrecio = (n) => '$' + n.toLocaleString('es-AR')
 
+/* Top 3 para el menú rápido del hero */
+const TOP_PICKS = [
+  { ...MENU.promos.find(p => p.id === 'p2'), badge: '🔥 LA MÁS PEDIDA' },
+  { ...MENU.promos.find(p => p.id === 'p1'), badge: '🍕 COMBO' },
+  { ...MENU.pizzas.find(p => p.id === 's23'), badge: '⭐ PREMIUM' },
+]
+
 function App() {
   const [carrito, setCarrito] = useState({})
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -77,6 +85,11 @@ function App() {
   const [carritoMobileOpen, setCarritoMobileOpen] = useState(false)
   const [upsellVisible, setUpsellVisible] = useState(false)
   const [upsellData, setUpsellData] = useState(null)
+  const menuRef = useRef(null)
+
+  const scrollToMenu = () => {
+    menuRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const obtenerProducto = (id) => {
     for (const items of Object.values(MENU)) {
@@ -264,20 +277,48 @@ ${lista}
 
   return (
     <div className="app-container">
-      <header className="header">
-        <div className="header-brand">
-          <div className="header-logo-wrapper">
-            <img src={logo} alt="PizzaRap" className="header-logo" />
+      {/* ── HERO ── */}
+      <section className="hero">
+        <div className="hero-bg">
+          <img src={heroImg} alt="" className="hero-img" />
+          <div className="hero-overlay" />
+        </div>
+        <div className="hero-content">
+          <div className="hero-brand">
+            <img src={logo} alt="PizzaRap" className="hero-logo" />
+            <div>
+              <h1 className="hero-title">PIZZARAP</h1>
+              <p className="hero-tagline">Pizzas que no fallan.</p>
+            </div>
           </div>
-          <div className="header-text">
-            <h1>PIZZARAP</h1>
-            <span className="header-tagline">Pizzas que no fallan.</span>
-            <span className="header-sub">Hurlingham — Delivery</span>
+          <div className="hero-info-bar">
+            <span>📍 Hurlingham</span>
+            <span>🕐 Abierto ahora</span>
+            <span>📱 Pedí por WhatsApp</span>
+          </div>
+          <button className="hero-cta" onClick={scrollToMenu}>
+            PEDIR AHORA
+          </button>
+
+          {/* Quick picks */}
+          <div className="hero-picks">
+            {TOP_PICKS.map(p => (
+              <div key={p.id} className={`hero-pick ${p.id === DESTACADO_ID ? 'hero-pick-featured' : ''}`}>
+                <span className="hero-pick-badge">{p.badge}</span>
+                <span className="hero-pick-name">{p.nombre}</span>
+                <span className="hero-pick-desc">{p.desc}</span>
+                <span className="hero-pick-price">{formatPrecio(p.precio)}</span>
+                <button className="hero-pick-btn" onClick={() => agregar(p.id, true)}>
+                  Agregar
+                </button>
+              </div>
+            ))}
           </div>
         </div>
-      </header>
+      </section>
 
-      <div className="main-layout">
+      {/* ── MAIN LAYOUT ── */}
+      <div className="main-layout" ref={menuRef}>
         <section className="productos-section">
           {renderCategoria('promos', 'PROMOS')}
           {renderCategoria('pizzas', 'PIZZAS')}
@@ -340,7 +381,7 @@ ${lista}
         </div>
       )}
 
-      {/* MOBILE STICKY BAR */}
+      {/* MOBILE STICKY BAR — SIEMPRE VISIBLE */}
       {!carritoMobileOpen && !upsellVisible && (
         <div className="mobile-sticky-bar">
           {totalItems > 0 && (
@@ -351,10 +392,9 @@ ${lista}
           )}
           <button
             className="mobile-sticky-cta"
-            disabled={totalItems === 0}
-            onClick={() => totalItems > 0 ? setMostrarFormulario(true) : null}
+            onClick={() => totalItems > 0 ? setMostrarFormulario(true) : scrollToMenu()}
           >
-            {totalItems > 0 ? 'Pedir ahora' : 'Elegí algo para pedir'}
+            {totalItems > 0 ? `PEDIR AHORA — ${formatPrecio(totalPrecio)}` : 'VER MENÚ'}
           </button>
         </div>
       )}
