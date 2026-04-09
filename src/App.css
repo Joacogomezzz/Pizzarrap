@@ -110,6 +110,8 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  height: calc(100vh - 120px);
+  height: calc(100dvh - 120px);
 }
 
 /* ===== PRODUCTOS ===== */
@@ -359,10 +361,7 @@ body {
   flex-direction: column;
   border-left: 1px solid #1e1e1e;
   overflow: hidden;
-  position: sticky;
-  top: 0;
-  max-height: 100vh;
-  max-height: 100dvh;
+  flex-shrink: 0;
 }
 
 .carrito-desktop h2 {
