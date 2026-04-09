@@ -361,8 +361,8 @@ body {
   overflow: hidden;
   position: sticky;
   top: 0;
-  height: 100vh;
-  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
 }
 
 .carrito-desktop h2 {
@@ -378,6 +378,7 @@ body {
 
 .carrito-contenido {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
