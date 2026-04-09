@@ -745,6 +745,13 @@ body {
   transform: scale(0.98);
 }
 
+.mobile-sticky-cta:disabled {
+  background: #333;
+  color: #666;
+  box-shadow: none;
+  cursor: default;
+}
+
 /* ===== MOBILE CART DRAWER ===== */
 .carrito-mobile-overlay {
   display: none;

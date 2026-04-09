@@ -341,14 +341,20 @@ ${lista}
       )}
 
       {/* MOBILE STICKY BAR */}
-      {totalItems > 0 && !carritoMobileOpen && !upsellVisible && (
+      {!carritoMobileOpen && !upsellVisible && (
         <div className="mobile-sticky-bar">
-          <div className="mobile-sticky-info" onClick={() => setCarritoMobileOpen(true)}>
-            <span className="mobile-sticky-count">{totalItems}</span>
-            <span className="mobile-sticky-total">{formatPrecio(totalPrecio)}</span>
-          </div>
-          <button className="mobile-sticky-cta" onClick={() => setMostrarFormulario(true)}>
-            Pedir ahora
+          {totalItems > 0 && (
+            <div className="mobile-sticky-info" onClick={() => setCarritoMobileOpen(true)}>
+              <span className="mobile-sticky-count">{totalItems}</span>
+              <span className="mobile-sticky-total">{formatPrecio(totalPrecio)}</span>
+            </div>
+          )}
+          <button
+            className="mobile-sticky-cta"
+            disabled={totalItems === 0}
+            onClick={() => totalItems > 0 ? setMostrarFormulario(true) : null}
+          >
+            {totalItems > 0 ? 'Pedir ahora' : 'Elegí algo para pedir'}
           </button>
         </div>
       )}
