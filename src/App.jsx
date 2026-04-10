@@ -563,7 +563,19 @@ function App() {
         <UpsellToast data={upsellData} onAddExtra={handleExtraSelection} onClose={closeUpsell} />
       )}
 
-      {!carritoMobileOpen && !upsellVisible && (
+      {totalItems > 0 && (
+        <div className="fixed-order-btn desktop-only">
+          <button
+            className="btn-fixed-order"
+            onClick={() => setMostrarFormulario(true)}
+            type="button"
+          >
+            Pedir ahora · {formatPrecio(totalPrecio)}
+          </button>
+        </div>
+      )}
+
+      {!carritoMobileOpen && (
         <div className="mobile-sticky-bar">
           {totalItems > 0 && (
             <button className="mobile-sticky-info" onClick={() => setCarritoMobileOpen(true)} type="button">
