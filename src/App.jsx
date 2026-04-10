@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import logo from './assets/logo-new.png'
+import { onAvailabilityChange, setProductAvailability } from './firebase'
 
 const DESTACADO_ID = 'p2'
 const NUMERO_WHATSAPP = '5491130282746'
@@ -134,63 +135,72 @@ function CategoryTitle({ titulo }) {
   )
 }
 
-function ProductCard({ producto, cantidad, isPromo, onAdd, onSubtract }) {
+function ProductCard({ producto, cantidad, isPromo, onAdd, onSubtract, disabled }) {
   const isDestacado = producto.id === DESTACADO_ID
-  const cardClassName = ['producto-card', isPromo ? 'promo-card' : '', isDestacado ? 'card-destacada' : '']
+  const cardClassName = ['producto-card', isPromo ? 'promo-card' : '', isDestacado && !disabled ? 'card-destacada' : '', disabled ? 'card-disabled' : '']
     .filter(Boolean)
     .join(' ')
 
   return (
     <div className={cardClassName}>
-      {isDestacado && <span className="badge-destacado">La más pedida</span>}
-      {producto.tag && !isDestacado && <span className="producto-tag">{producto.tag}</span>}
+      {disabled && <span className="badge-no-disponible">No disponible hoy</span>}
+      {!disabled && isDestacado && <span className="badge-destacado">La más pedida</span>}
+      {!disabled && producto.tag && !isDestacado && <span className="producto-tag">{producto.tag}</span>}
 
       <div className="producto-info">
         <p className="precio">{formatPrecio(producto.precio)}</p>
         <h4>{producto.nombre}</h4>
         <p className="producto-desc">{producto.desc}</p>
-        {producto.urgencia && <span className="urgencia">🔥 {producto.urgencia}</span>}
+        {!disabled && producto.urgencia && <span className="urgencia">🔥 {producto.urgencia}</span>}
       </div>
 
-      <div className="producto-controles">
-        {cantidad ? (
-          <QuantityControl cantidad={cantidad} onAdd={onAdd} onSubtract={onSubtract} />
-        ) : (
-          <button
-            className={`btn-agregar ${isDestacado ? 'btn-agregar-destacado' : ''}`}
-            onClick={onAdd}
-            type="button"
-          >
-            {isDestacado ? 'Pedir esta' : 'Agregar'}
-          </button>
-        )}
-      </div>
+      {!disabled && (
+        <div className="producto-controles">
+          {cantidad ? (
+            <QuantityControl cantidad={cantidad} onAdd={onAdd} onSubtract={onSubtract} />
+          ) : (
+            <button
+              className={`btn-agregar ${isDestacado ? 'btn-agregar-destacado' : ''}`}
+              onClick={onAdd}
+              type="button"
+            >
+              {isDestacado ? 'Pedir esta' : 'Agregar'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-function ExtraCard({ extra, cantidad, onAdd, onSubtract }) {
+function ExtraCard({ extra, cantidad, onAdd, onSubtract, disabled }) {
   return (
-    <div className="extra-card">
+    <div className={`extra-card ${disabled ? 'card-disabled' : ''}`}>
       <span className="extra-emoji">{extra.emoji}</span>
       <div className="extra-info">
         <span className="extra-nombre">{extra.nombre}</span>
-        <span className="extra-precio">+{formatPrecio(extra.precio)}</span>
-      </div>
-      <div className="producto-controles">
-        {cantidad ? (
-          <QuantityControl cantidad={cantidad} onAdd={onAdd} onSubtract={onSubtract} />
+        {disabled ? (
+          <span className="extra-no-disponible">No disponible hoy</span>
         ) : (
-          <button className="btn-agregar btn-agregar-extra" onClick={onAdd} type="button">
-            Sumar
-          </button>
+          <span className="extra-precio">+{formatPrecio(extra.precio)}</span>
         )}
       </div>
+      {!disabled && (
+        <div className="producto-controles">
+          {cantidad ? (
+            <QuantityControl cantidad={cantidad} onAdd={onAdd} onSubtract={onSubtract} />
+          ) : (
+            <button className="btn-agregar btn-agregar-extra" onClick={onAdd} type="button">
+              Sumar
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-function CategorySection({ titulo, productos, carrito, isPromo, onAdd, onSubtract }) {
+function CategorySection({ titulo, productos, carrito, isPromo, onAdd, onSubtract, availability }) {
   return (
     <div className="categoria">
       <CategoryTitle titulo={titulo} />
@@ -199,6 +209,7 @@ function CategorySection({ titulo, productos, carrito, isPromo, onAdd, onSubtrac
           <ProductCard
             key={producto.id}
             cantidad={carrito[producto.id]}
+            disabled={availability[producto.id] === false}
             isPromo={isPromo}
             onAdd={() => onAdd(producto.id)}
             onSubtract={() => onSubtract(producto.id)}
@@ -410,13 +421,85 @@ function OrderModal({ formData, onChange, onClose, onSubmit }) {
   )
 }
 
+const ADMIN_PASSWORD = 'pizzarap2024'
+
+function AdminPanel({ availability }) {
+  const [authed, setAuthed] = useState(false)
+  const [pass, setPass] = useState('')
+
+  if (!authed) {
+    return (
+      <div className="admin-login">
+        <div className="admin-login-box">
+          <h2>Admin</h2>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && pass === ADMIN_PASSWORD && setAuthed(true)}
+          />
+          <button onClick={() => pass === ADMIN_PASSWORD ? setAuthed(true) : alert('Contraseña incorrecta')}>
+            Entrar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="admin-panel">
+      <div className="admin-header">
+        <h2>Disponibilidad de productos</h2>
+        <button onClick={() => window.location.hash = ''}>Volver a la web</button>
+      </div>
+      <div className="admin-list">
+        {PRODUCTOS.map((p) => {
+          const available = availability[p.id] !== false
+          return (
+            <div key={p.id} className={`admin-item ${available ? '' : 'admin-item-off'}`}>
+              <div className="admin-item-info">
+                <span className="admin-item-name">{p.emoji ? `${p.emoji} ` : ''}{p.nombre}</span>
+                <span className="admin-item-price">{formatPrecio(p.precio)}</span>
+              </div>
+              <button
+                className={`admin-toggle ${available ? 'admin-toggle-on' : 'admin-toggle-off'}`}
+                onClick={() => setProductAvailability(p.id, !available)}
+              >
+                {available ? 'Disponible' : 'No disponible'}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [carrito, setCarrito] = useState({})
   const [formData, setFormData] = useState(FORM_INITIAL_STATE)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [carritoMobileOpen, setCarritoMobileOpen] = useState(false)
   const [upsellData, setUpsellData] = useState(null)
+  const [availability, setAvailability] = useState({})
+  const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin')
   const menuRef = useRef(null)
+
+  useEffect(() => {
+    const unsubscribe = onAvailabilityChange(setAvailability)
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const onHash = () => setIsAdmin(window.location.hash === '#admin')
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  if (isAdmin) {
+    return <AdminPanel availability={availability} />
+  }
 
   const upsellVisible = Boolean(upsellData)
   const totalItems = Object.values(carrito).reduce((total, cantidad) => total + cantidad, 0)
@@ -551,6 +634,7 @@ function App() {
           {CATEGORY_SECTIONS.map(({ key, titulo }) => (
             <CategorySection
               key={key}
+              availability={availability}
               carrito={carrito}
               isPromo={key === 'promos'}
               onAdd={(id) => addItem(id, true)}
@@ -567,6 +651,7 @@ function App() {
                 <ExtraCard
                   key={extra.id}
                   cantidad={carrito[extra.id]}
+                  disabled={availability[extra.id] === false}
                   extra={extra}
                   onAdd={() => addItem(extra.id)}
                   onSubtract={() => removeItem(extra.id)}
