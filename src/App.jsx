@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import logo from './assets/logo-new.png'
+import heroImage from './assets/hero.png'
 
 const DESTACADO_ID = 'p2'
 const NUMERO_WHATSAPP = '5491130282746'
@@ -268,7 +269,7 @@ function CartFooter({ totalItems, totalPrecio, onCheckout, onClear }) {
         </div>
         <button className="btn-cta" onClick={onCheckout} type="button">
           <span className="btn-cta-text">Pedir ahora</span>
-          <span className="btn-cta-sub">en WhatsApp</span>
+          <span className="btn-cta-sub">Confirmación final</span>
         </button>
       </div>
       <button className="btn-limpiar" onClick={onClear} type="button">Vaciar pedido</button>
@@ -503,19 +504,29 @@ function App() {
           <button className="hero-cta" onClick={scrollToMenu} type="button">
             PEDIR AHORA
           </button>
+          <p className="hero-cta-subtitle">Elegí tu pizza en segundos</p>
 
-          <div className="hero-picks">
-            {TOP_PICKS.map((producto) => (
-              <div key={producto.id} className={`hero-pick ${producto.id === DESTACADO_ID ? 'hero-pick-featured' : ''}`}>
-                <span className="hero-pick-badge">{producto.badge}</span>
-                <span className="hero-pick-name">{producto.nombre}</span>
-                <span className="hero-pick-desc">{producto.desc}</span>
-                <span className="hero-pick-price">{formatPrecio(producto.precio)}</span>
-                <button className="hero-pick-btn" onClick={() => addItem(producto.id, true)} type="button">
-                  {producto.id === DESTACADO_ID ? 'Pedir esta' : 'Agregar'}
-                </button>
-              </div>
-            ))}
+          <div className="hero-showcase">
+            <div className="hero-picks">
+              {TOP_PICKS.map((producto) => (
+                <div key={producto.id} className={`hero-pick ${producto.id === DESTACADO_ID ? 'hero-pick-featured' : ''}`}>
+                  <span className="hero-pick-badge">{producto.badge}</span>
+                  <span className="hero-pick-name">{producto.nombre}</span>
+                  <span className="hero-pick-desc">{producto.desc}</span>
+                  {producto.id === DESTACADO_ID && producto.urgencia && (
+                    <span className="hero-pick-urgency">🔥 {producto.urgencia}</span>
+                  )}
+                  <span className="hero-pick-price">{formatPrecio(producto.precio)}</span>
+                  <button className="hero-pick-btn" onClick={() => addItem(producto.id, true)} type="button">
+                    {producto.id === DESTACADO_ID ? 'Pedir esta' : 'Agregar'}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="hero-image-wrap" aria-hidden="true">
+              <img className="hero-image" src={heroImage} alt="" />
+            </div>
           </div>
         </div>
       </section>
@@ -525,11 +536,6 @@ function App() {
           <div className="menu-header">
             <div>
               <h2>Elegí tu pedido</h2>
-            </div>
-            <div className="menu-summary">
-              <span>{TOP_PICKS.length} destacados</span>
-              <span>{MENU.pizzas.length} variedades</span>
-              <span>Extras para sumar</span>
             </div>
           </div>
 
