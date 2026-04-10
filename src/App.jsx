@@ -73,6 +73,7 @@ const FORM_INITIAL_STATE = {
   nombre: '',
   direccion: '',
   entreCalles: '',
+  metodoEntrega: 'envio',
   metodoPago: 'efectivo',
 }
 
@@ -98,8 +99,8 @@ function createOrderMessage({ carrito, formData, totalPrecio }) {
   return `🍕 *NUEVO PEDIDO - PIZZARAP* 🍕
 
 *Cliente:* ${formData.nombre}
-*Dirección:* ${formData.direccion}
-*Entre calles:* ${formData.entreCalles}
+*Entrega:* ${formData.metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}
+${formData.metodoEntrega === 'envio' ? `*Dirección:* ${formData.direccion}\n*Entre calles:* ${formData.entreCalles}` : ''}
 *Pago:* ${PAYMENT_LABELS[formData.metodoPago]}
 
 *Pedido:*
@@ -325,29 +326,57 @@ function OrderModal({ formData, onChange, onClose, onSubmit }) {
             />
           </div>
           <div className="formulario-grupo">
-            <label htmlFor="direccion">Dirección con altura</label>
-            <input
-              className="formulario-input"
-              id="direccion"
-              name="direccion"
-              onChange={onChange}
-              placeholder="Ej: Av. Vergara 1234"
-              type="text"
-              value={formData.direccion}
-            />
+            <label>Entrega</label>
+            <div className="entrega-toggle">
+              <button
+                className={`entrega-btn ${formData.metodoEntrega === 'envio' ? 'entrega-btn-active' : ''}`}
+                onClick={() => onChange({ target: { name: 'metodoEntrega', value: 'envio' } })}
+                type="button"
+              >
+                Envío
+              </button>
+              <button
+                className={`entrega-btn ${formData.metodoEntrega === 'retiro' ? 'entrega-btn-active' : ''}`}
+                onClick={() => onChange({ target: { name: 'metodoEntrega', value: 'retiro' } })}
+                type="button"
+              >
+                Retiro
+              </button>
+            </div>
           </div>
-          <div className="formulario-grupo">
-            <label htmlFor="entreCalles">Entre calles / Referencia</label>
-            <input
-              className="formulario-input"
-              id="entreCalles"
-              name="entreCalles"
-              onChange={onChange}
-              placeholder="Ej: entre Jujuy y Salta"
-              type="text"
-              value={formData.entreCalles}
-            />
-          </div>
+          {formData.metodoEntrega === 'envio' ? (
+            <>
+              <div className="formulario-grupo">
+                <label htmlFor="direccion">Dirección con altura</label>
+                <input
+                  className="formulario-input"
+                  id="direccion"
+                  name="direccion"
+                  onChange={onChange}
+                  placeholder="Ej: Av. Vergara 1234"
+                  type="text"
+                  value={formData.direccion}
+                />
+              </div>
+              <div className="formulario-grupo">
+                <label htmlFor="entreCalles">Entre calles / Referencia</label>
+                <input
+                  className="formulario-input"
+                  id="entreCalles"
+                  name="entreCalles"
+                  onChange={onChange}
+                  placeholder="Ej: entre Jujuy y Salta"
+                  type="text"
+                  value={formData.entreCalles}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="retiro-info">
+              <p>Retirás en el local</p>
+              <span>Te avisamos cuando esté listo</span>
+            </div>
+          )}
           <div className="formulario-grupo">
             <label>Pago</label>
             <div className="metodo-pago">
@@ -458,8 +487,10 @@ function App() {
   const handleCheckout = () => {
     const validations = [
       { isValid: formData.nombre.trim(), message: 'Ingresá tu nombre' },
-      { isValid: formData.direccion.trim(), message: 'Ingresá tu dirección con altura' },
-      { isValid: formData.entreCalles.trim(), message: 'Ingresá las entre calles' },
+      ...(formData.metodoEntrega === 'envio' ? [
+        { isValid: formData.direccion.trim(), message: 'Ingresá tu dirección con altura' },
+        { isValid: formData.entreCalles.trim(), message: 'Ingresá las entre calles' },
+      ] : []),
     ]
 
     const invalidField = validations.find(({ isValid }) => !isValid)
