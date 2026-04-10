@@ -92,34 +92,27 @@ function createOrderMessage({ carrito, formData, totalPrecio }) {
   const lista = Object.entries(carrito)
     .map(([id, cantidad]) => {
       const producto = PRODUCTOS_POR_ID[id]
-      return `  ${producto.nombre} x${cantidad} — ${formatPrecio(producto.precio * cantidad)}`
+      return `${producto.nombre} x${cantidad} - ${formatPrecio(producto.precio * cantidad)}`
     })
     .join('\n')
 
   const entrega = formData.metodoEntrega === 'retiro'
     ? 'Retiro en el local'
-    : 'Envío a domicilio'
+    : 'Envio a domicilio'
 
   const direccionBlock = formData.metodoEntrega === 'envio'
-    ? `\n📍 *Dirección:* ${formData.direccion}\n🔀 *Entre calles:* ${formData.entreCalles}`
+    ? `\nDireccion: ${formData.direccion}\nEntre calles: ${formData.entreCalles}`
     : ''
 
-  return `*Nuevo pedido*
-_Pizzarap_
+  return `${formData.nombre}
 
-👤 *Cliente:* ${formData.nombre}
-🚗 *Entrega:* ${entrega}${direccionBlock}
-💳 *Pago:* ${PAYMENT_LABELS[formData.metodoPago]}
+Entrega: ${entrega}${direccionBlock}
+Pago: ${PAYMENT_LABELS[formData.metodoPago]}
 
-———————————
-
-🛒 *Pedido:*
-
+Pedido:
 ${lista}
 
-———————————
-
-💰 *Total: ${formatPrecio(totalPrecio)}*`
+Total: ${formatPrecio(totalPrecio)}`
 }
 
 function QuantityControl({ cantidad, onAdd, onSubtract, buttonClassName = 'btn-small' }) {
