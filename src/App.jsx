@@ -10,7 +10,7 @@ const CATEGORY_SECTIONS = [
 ]
 const PAYMENT_LABELS = {
   efectivo: 'Efectivo',
-  transferencia: 'Transferencia / MP',
+  transferencia: 'Transferencia / Mercado Pago',
 }
 
 const SERVICE_BADGES = ['Hurlingham', 'Abierto ahora']
@@ -92,21 +92,34 @@ function createOrderMessage({ carrito, formData, totalPrecio }) {
   const lista = Object.entries(carrito)
     .map(([id, cantidad]) => {
       const producto = PRODUCTOS_POR_ID[id]
-      return `• ${producto.nombre}${producto.desc ? ` (${producto.desc})` : ''} x${cantidad} - ${formatPrecio(producto.precio * cantidad)}`
+      return `  ${producto.nombre} x${cantidad} — ${formatPrecio(producto.precio * cantidad)}`
     })
     .join('\n')
 
-  return `🍕 *NUEVO PEDIDO - PIZZARAP* 🍕
+  const entrega = formData.metodoEntrega === 'retiro'
+    ? 'Retiro en el local'
+    : 'Envío a domicilio'
 
-*Cliente:* ${formData.nombre}
-*Entrega:* ${formData.metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}
-${formData.metodoEntrega === 'envio' ? `*Dirección:* ${formData.direccion}\n*Entre calles:* ${formData.entreCalles}` : ''}
-*Pago:* ${PAYMENT_LABELS[formData.metodoPago]}
+  const direccionBlock = formData.metodoEntrega === 'envio'
+    ? `\n📍 *Dirección:* ${formData.direccion}\n🔀 *Entre calles:* ${formData.entreCalles}`
+    : ''
 
-*Pedido:*
+  return `*Nuevo pedido*
+_Pizzarap_
+
+👤 *Cliente:* ${formData.nombre}
+🚗 *Entrega:* ${entrega}${direccionBlock}
+💳 *Pago:* ${PAYMENT_LABELS[formData.metodoPago]}
+
+———————————
+
+🛒 *Pedido:*
+
 ${lista}
 
-*TOTAL: ${formatPrecio(totalPrecio)}*`
+———————————
+
+💰 *Total: ${formatPrecio(totalPrecio)}*`
 }
 
 function QuantityControl({ cantidad, onAdd, onSubtract, buttonClassName = 'btn-small' }) {
