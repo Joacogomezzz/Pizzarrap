@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import logo from './assets/logo-new.png'
-import heroImage from './assets/hero.png'
 
 const DESTACADO_ID = 'p2'
 const NUMERO_WHATSAPP = '5491130282746'
@@ -69,11 +68,6 @@ const UPSELL_RULES = {
 const PRODUCTOS = [...MENU.promos, ...MENU.pizzas, ...EXTRAS]
 const PRODUCTOS_POR_ID = Object.fromEntries(PRODUCTOS.map((producto) => [producto.id, producto]))
 const DESTACADO = PRODUCTOS_POR_ID[DESTACADO_ID]
-const TOP_PICKS = [
-  { ...PRODUCTOS_POR_ID.p2, badge: 'La más pedida' },
-  { ...PRODUCTOS_POR_ID.p1, badge: 'Combo' },
-  { ...PRODUCTOS_POR_ID.s23, badge: 'Premium' },
-]
 
 const FORM_INITIAL_STATE = {
   nombre: '',
@@ -506,28 +500,6 @@ function App() {
           </button>
           <p className="hero-cta-subtitle">Elegí tu pizza en segundos</p>
 
-          <div className="hero-showcase">
-            <div className="hero-picks">
-              {TOP_PICKS.map((producto) => (
-                <div key={producto.id} className={`hero-pick ${producto.id === DESTACADO_ID ? 'hero-pick-featured' : ''}`}>
-                  <span className="hero-pick-badge">{producto.badge}</span>
-                  <span className="hero-pick-name">{producto.nombre}</span>
-                  <span className="hero-pick-desc">{producto.desc}</span>
-                  {producto.id === DESTACADO_ID && producto.urgencia && (
-                    <span className="hero-pick-urgency">🔥 {producto.urgencia}</span>
-                  )}
-                  <span className="hero-pick-price">{formatPrecio(producto.precio)}</span>
-                  <button className="hero-pick-btn" onClick={() => addItem(producto.id, true)} type="button">
-                    {producto.id === DESTACADO_ID ? 'Pedir esta' : 'Agregar'}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="hero-image-wrap" aria-hidden="true">
-              <img className="hero-image" src={heroImage} alt="" />
-            </div>
-          </div>
         </div>
       </section>
 
