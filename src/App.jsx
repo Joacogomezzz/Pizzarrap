@@ -4,7 +4,7 @@ import logo from './assets/logo-new.png'
 import { onAvailabilityChange, setProductAvailability } from './firebase'
 
 const DESTACADO_ID = 'p2'
-const NUMERO_WHATSAPP = '5491130282746'
+const NUMERO_WHATSAPP = '5491127443866'
 const CATEGORY_SECTIONS = [
   { key: 'promos', titulo: 'Promos' },
   { key: 'pizzas', titulo: 'Pizzas' },
